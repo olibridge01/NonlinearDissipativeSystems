@@ -1,4 +1,5 @@
-# Part III Project - Quantum Reaction Rates in Nonlinear Dissipative Systems
+# Quantum Reaction Rates in Nonlinear Dissipative Systems
+## Part III Project
 ---
 
 Oli Bridge, <ob344@cam.ac.uk>
