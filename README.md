@@ -8,6 +8,10 @@ St Catharine's College, Cambridge
 
 Part III Project in Althorpe group.
 
+### Abstract
+
+Low energy excitations of electron-hole pairs in metals induce spatially-dependent non-adiabatic effects (NAEs) by coupling the nuclear and electronic degrees of freedom. It has recently been proposed that one can model this with a system nonlinearly coupled to a bath of harmonic oscillators. Additionally, systems involving light atoms exhibit significant nuclear quantum effects (NQEs), which may be accounted for with ring polymer molecular dynamics (RPMD), a method for simulating approximate quantum dynamics that conserves the quantum Boltzmann distribution. In this work, we investigate how the quantum rate in a one-dimensional double-well potential is affected by position-dependent friction. Numerical calculations show that the recrossing dynamics, which behave classically at room temperature, are significantly affected by the nonlinear friction. For strong coupling, quantum effects on the rate are also observed since the free energy contribution from the bath becomes strongly dependent on position. In the deep-tunnelling regime, a systematic lowering of the instanton crossover temperature with bath friction is observed to heavily impact the free energy barriers for both linear and nonlinear coupling. Extension of this model to a one-dimensional treatment of hydrogen hopping in bulk palladium shows that the inclusion of NAEs yields increases in the rate, primarily due to altered recrossing, that are greater than from the inclusion of NQEs.
+
 ---
 
 ## Setup and Installation

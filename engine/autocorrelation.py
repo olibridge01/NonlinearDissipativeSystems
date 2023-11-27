@@ -1,18 +1,9 @@
 import numpy as np
 import random
+from engine.utils import init_p, rpmd_C, rpmd_E
 import matplotlib.pyplot as plt
 
-#--------------------Constants--------------------
-
-class Constants(object):
-    """
-    Physical constants.
-
-    kb: Boltzmann constant
-    hbar: Reduced Planck's constant
-    """
-    kb = 1.0
-    hbar = 1.05457182e-34
+#--------------------Frequencies--------------------
 
 def omegas(N,beta):
     """
@@ -35,92 +26,6 @@ def omegas(N,beta):
     for i in range(N):
         omegas[i] = 2 * omega_N * np.sin(i * np.pi / N)
     return omegas
-
-#------------------RPMD matrices------------------
-
-def rpmd_C(N):
-    """
-    Generates the transformation matrix to transform the positions and momenta into the normal mode representation.
-    
-    Parameters
-    ----------
-    N : int
-        Number of ring polymer beads.
-    
-    Returns
-    -------
-    C : array
-        Transformation matrix with shape (N,N).
-    """
-    C = np.zeros((N, N))
-    for j in range(N):
-        for k in range(N):
-            if k == 0:
-                C[j][k] = np.sqrt(1 / N)
-            elif k > 0 and k <= N/2 - 1:
-                C[j][k] = np.sqrt(2 / N) * np.cos((2 * np.pi * j * k) / N)
-            elif k == N/2:
-                C[j][k] = np.sqrt(1 / N) * np.power(-1, j)
-            elif k >= N/2 + 1:
-                C[j][k] = np.sqrt(2 / N) * np.sin((2 * np.pi * j * k) / N)
-    return C
-
-
-def rpmd_E(omega, mass, dt):
-    """
-    Takes value for omega_k and returns the corresponding evolution matrix for the symplectic integration.
-    
-    Parameters
-    ----------
-    omega : float
-        Ring polymer normal mode frequency.
-    mass : float
-        Particle mass in atomic units.
-    dt : float
-        Timestep length in atomic units.
-    
-    Returns
-    -------
-    E : array
-        Evolution matrix with shape (2,2).
-    """
-    E = np.zeros((2,2))
-    if omega == 0:
-        # Deals with the omega = 0 limit of the evolution matrix, which would be undefined using numpy functions
-        E[0][0] = 1
-        E[0][1] = 0
-        E[1][0] = dt / mass
-        E[1][1] = 1
-    else:
-        E[0][0] = np.cos(omega * dt)
-        E[0][1] = -mass * omega * np.sin(omega * dt)
-        E[1][0] = (1 / (mass * omega)) * np.sin(omega * dt)
-        E[1][1] = np.cos(omega * dt)
-    return E
-
-#------------------Initialisation------------------
-
-def init_p(N, mass, beta):
-    """
-    Initialise momenta from Gaussian distribution (used for periodic resampling of momenta from Boltzmann distribution).
-    
-    Parameters
-    ----------
-    N : int
-        Number of ring polymer beads.
-    mass : float
-        Particle mass in atomic units.
-    beta : float
-        Inverse temperature (1/(kB*T)).
-
-    Returns
-    -------
-    p_distribution : float
-        Momentum value sampled from Gaussian.
-    """
-    sigma_p = np.sqrt((mass * N) / beta)
-    p_distribution = np.random.normal(0, sigma_p)
-    return p_distribution
 
 #------------------Autocorrelation Function------------------
 
@@ -199,13 +104,14 @@ class AutoCorrelation:
         # Initialise array of x(0)x(t) values, as well as momentum for classical particle
         xx = np.zeros(self.n_evol)
 
-        # Initialise particle position
+        # Initialise particle momentum and position
+        p = 0
         x = 0
 
         # Equilibriation phase
         for i_equilibrium in range(self.n_equil):
             # Momentum resampled every cycle to avoid nonergodicity
-            p = init_p(N, self.mass, self.beta)
+            p = init_p(p, N, self.mass, self.beta)
 
             # Velocity verlet algorithm
             for i_evol in range(self.n_evol):
@@ -214,7 +120,7 @@ class AutoCorrelation:
         # Sampling phase
         for i_sample in range(self.n_samp):
             # Resampling momentum each cycle
-            p = init_p(N, self.mass, self.beta)
+            p = init_p(p, N, self.mass, self.beta)
 
             # Setting A to current x value i.e. x(0)
             A = x
@@ -308,7 +214,7 @@ class AutoCorrelation:
 
             # Resample momenta from Boltzmann distribution
             for i in range(N):
-                p[i] = init_p(N, self.mass, self.beta)
+                p[i] = init_p(p[i], N, self.mass, self.beta)
 
             # Velocity Verlet with normal mode transformations
             for i_evol in range(self.n_evol):
@@ -319,7 +225,7 @@ class AutoCorrelation:
 
             # Resample momenta from Boltzmann distribution
             for i in range(N):
-                p[i] = init_p(N, self.mass, self.beta)
+                p[i] = init_p(p[i], N, self.mass, self.beta)
 
             A = 0
             for i in range(N):
