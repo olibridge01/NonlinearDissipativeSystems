@@ -1,0 +1,342 @@
+import numpy as np
+import random
+import matplotlib.pyplot as plt
+
+#--------------------Constants--------------------
+
+class Constants(object):
+    """
+    Physical constants.
+
+    kb: Boltzmann constant
+    hbar: Reduced Planck's constant
+    """
+    kb = 1.0
+    hbar = 1.05457182e-34
+
+def omegas(N,beta):
+    """
+    Generates the ring polymer normal mode frequencies.
+    
+    Parameters
+    ----------
+    N : int
+        Number of ring polymer beads.
+    beta : float
+        Inverse temperature (1/(kB*T)).
+
+    Returns
+    -------
+    omegas : array
+        Array of ring polymer normal mode frequencies.
+    """
+    omega_N = N / beta
+    omegas = np.zeros(N)
+    for i in range(N):
+        omegas[i] = 2 * omega_N * np.sin(i * np.pi / N)
+    return omegas
+
+#------------------RPMD matrices------------------
+
+def rpmd_C(N):
+    """
+    Generates the transformation matrix to transform the positions and momenta into the normal mode representation.
+    
+    Parameters
+    ----------
+    N : int
+        Number of ring polymer beads.
+    
+    Returns
+    -------
+    C : array
+        Transformation matrix with shape (N,N).
+    """
+    C = np.zeros((N, N))
+    for j in range(N):
+        for k in range(N):
+            if k == 0:
+                C[j][k] = np.sqrt(1 / N)
+            elif k > 0 and k <= N/2 - 1:
+                C[j][k] = np.sqrt(2 / N) * np.cos((2 * np.pi * j * k) / N)
+            elif k == N/2:
+                C[j][k] = np.sqrt(1 / N) * np.power(-1, j)
+            elif k >= N/2 + 1:
+                C[j][k] = np.sqrt(2 / N) * np.sin((2 * np.pi * j * k) / N)
+    return C
+
+
+def rpmd_E(omega, mass, dt):
+    """
+    Takes value for omega_k and returns the corresponding evolution matrix for the symplectic integration.
+    
+    Parameters
+    ----------
+    omega : float
+        Ring polymer normal mode frequency.
+    mass : float
+        Particle mass in atomic units.
+    dt : float
+        Timestep length in atomic units.
+    
+    Returns
+    -------
+    E : array
+        Evolution matrix with shape (2,2).
+    """
+    E = np.zeros((2,2))
+    if omega == 0:
+        # Deals with the omega = 0 limit of the evolution matrix, which would be undefined using numpy functions
+        E[0][0] = 1
+        E[0][1] = 0
+        E[1][0] = dt / mass
+        E[1][1] = 1
+    else:
+        E[0][0] = np.cos(omega * dt)
+        E[0][1] = -mass * omega * np.sin(omega * dt)
+        E[1][0] = (1 / (mass * omega)) * np.sin(omega * dt)
+        E[1][1] = np.cos(omega * dt)
+    return E
+
+#------------------Initialisation------------------
+
+def init_p(N, mass, beta):
+    """
+    Initialise momenta from Gaussian distribution (used for periodic resampling of momenta from Boltzmann distribution).
+    
+    Parameters
+    ----------
+    N : int
+        Number of ring polymer beads.
+    mass : float
+        Particle mass in atomic units.
+    beta : float
+        Inverse temperature (1/(kB*T)).
+
+    Returns
+    -------
+    p_distribution : float
+        Momentum value sampled from Gaussian.
+    """
+    sigma_p = np.sqrt((mass * N) / beta)
+    p_distribution = np.random.normal(0, sigma_p)
+    return p_distribution
+
+#------------------Autocorrelation Function------------------
+
+class AutoCorrelation:
+    def __init__(self, force, beta=1.0, mass=1.0, dt=0.05, n_samp=1000, n_equil=100, n_evol=500):
+        """
+        Initialise simulation parameters for calculation of TCFs.
+        
+        Parameters
+        ----------
+        force : function
+            Function for the force acting on the particle.
+        beta : float
+            Inverse temperature (1/(kB*T)).
+        mass : float
+            Particle mass in atomic units.
+        dt : float
+            Timestep length in atomic units.
+        n_samp : int
+            Number of samples to take in the sampling phase.
+        n_equil : int
+            Number of cycles in the equilibration phase (discarded before sampling phase).
+        n_evol : int
+            Number of timesteps in the evolution phase.
+        
+        Returns
+        -------
+        None.
+        """
+        self.mass = mass
+        self.beta = beta
+        self.dt = dt
+        self.n_samp = n_samp
+        self.n_evol = n_evol
+        self.n_equil = n_equil
+        self.force = force
+
+
+    def classical_verlet_step(self, x, p):
+        """
+        Velocity Verlet algorithm for a classical particle.
+        
+        Parameters
+        ----------
+        x : float
+            Particle position.
+        p : float
+            Particle momentum.
+
+        Returns
+        -------
+        x : float
+            Updated particle position.
+        p : float
+            Updated particle momentum.
+        """
+        p += (self.dt / 2) * self.force(x)
+        x += self.dt * (p / self.mass)
+        p += (self.dt / 2) * self.force(x)
+        return x, p
+
+
+    def classical_autocorrelation(self):
+        """
+        Compute <x(0)x(t)> for a classical particle in a given 1D potential.
+        
+        Returns
+        -------
+        xx : array
+            Array of average <x(0)x(t)> values for each timestep in the evolution phase.
+        """
+
+        # Set number of beads to 1 (classical particle)
+        N = 1
+
+        # Initialise array of x(0)x(t) values, as well as momentum for classical particle
+        xx = np.zeros(self.n_evol)
+
+        # Initialise particle position
+        x = 0
+
+        # Equilibriation phase
+        for i_equilibrium in range(self.n_equil):
+            # Momentum resampled every cycle to avoid nonergodicity
+            p = init_p(N, self.mass, self.beta)
+
+            # Velocity verlet algorithm
+            for i_evol in range(self.n_evol):
+                x, p = self.classical_verlet_step(x, p)
+
+        # Sampling phase
+        for i_sample in range(self.n_samp):
+            # Resampling momentum each cycle
+            p = init_p(N, self.mass, self.beta)
+
+            # Setting A to current x value i.e. x(0)
+            A = x
+
+            # Velocity verlet
+            for i_evol in range(self.n_evol):
+                x, p = self.classical_verlet_step(x, p)
+
+                # Setting B to current x value i.e. x(t)
+                B = x
+
+                # Adding to x(0)x(t) array for corresponding time value
+                xx[i_evol] += A * B
+
+        xx /= self.n_samp
+        return xx
+
+
+    def rpmd_verlet_step(self, N, x, p, RPMD_C, omegas):
+        """
+        Velocity Verlet algorithm for a ring polymer particle.
+        
+        Parameters
+        ----------
+        x : array
+            Array of bead positions.
+        p : array
+            Array of bead momenta.
+        RPMD_C : array
+            Transformation matrix to transform the positions and momenta into the normal mode representation.
+        omegas : array
+            Array of ring polymer normal mode frequencies.
+
+        Returns
+        -------
+        x : array
+            Updated array of bead positions.
+        p : array
+            Updated array of bead momenta.
+        """
+        p += (self.dt / 2) * self.force(x)
+
+        px_vectors = np.zeros((N, 2))
+        px_vectors[:, 0] = np.dot(p, RPMD_C)
+        px_vectors[:, 1] = np.dot(x, RPMD_C)
+
+        for i in range(N):
+            px_vectors[i, :] = np.dot(rpmd_E(omegas[i], self.mass, self.dt), px_vectors[i, :])
+
+        p = np.dot(RPMD_C, px_vectors[:, 0])
+        x = np.dot(RPMD_C, px_vectors[:, 1])
+
+        p += (self.dt / 2) * self.force(x)
+
+        return x, p
+
+
+    def rpmd_autocorrelation(self, N):
+        """
+         Compute <x_N(0)x_N(t)> for an N-bead ring polymer in a given 1D potential.
+        
+        Parameters
+        ----------
+        N : int
+            Number of ring polymer beads.
+
+        Returns
+        -------
+        xx : array
+            Array of average <x_N(0)x_N(t)> values for each timestep in the evolution phase.
+        """
+
+        # Create matrix objects for the trajectory propagator
+        RPMD_C = rpmd_C(N)
+        omega_list = omegas(N, self.beta)
+
+        # Initialise array for the x(0)x(t) data, as well as the (p,x) vectors for each bead to be used in the normal mode basis
+        xx = np.zeros(self.n_evol)
+        px_vectors = np.zeros((N, 2))
+
+        # Initialise arrays to store momentum and position of the beads
+        p = np.zeros(N)
+        x = np.zeros(N)
+
+        # Initialise x
+        for i in range(N):
+            x[i] = 0
+
+        # Equilibration phase
+        for i_equilibrium in range(self.n_equil):
+
+            # Resample momenta from Boltzmann distribution
+            for i in range(N):
+                p[i] = init_p(N, self.mass, self.beta)
+
+            # Velocity Verlet with normal mode transformations
+            for i_evol in range(self.n_evol):
+                x, p = self.rpmd_verlet_step(N, x, p, RPMD_C, omega_list)
+
+        # Sampling phase
+        for i_sample in range(self.n_samp):
+
+            # Resample momenta from Boltzmann distribution
+            for i in range(N):
+                p[i] = init_p(N, self.mass, self.beta)
+
+            A = 0
+            for i in range(N):
+                A += x[i]
+            A /= N
+
+            # Velocity verlet
+            for i_evol in range(self.n_evol):
+                x, p = self.rpmd_verlet_step(N, x, p, RPMD_C, omega_list)
+
+                B = 0
+                for i in range(N):
+                    B += x[i]
+                B /= N
+
+                # Add x(0)x(t) value to the xx array
+                xx[i_evol] += (A * B)
+
+        xx /= self.n_samp
+        return xx
