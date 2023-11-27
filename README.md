@@ -15,7 +15,67 @@ Running the following command will install the required Python packages for exec
 python setup.py
 ```
 
-## Directories
+## Directory Structure
+
+```
+.
+├── code/
+│   ├── project1/
+│   │   ├── src/
+│   │   ├── data/
+│   │   └── README.md
+│   ├── project2/
+│   │   ├── src/
+│   │   ├── data/
+│   │   └── README.md
+│   └── ...
+├── datasets/
+├── literature/
+│   ├── papers/
+│   ├── books/
+│   └── README.md
+├── presentations/
+├── resources/
+│   ├── textbooks/
+│   ├── online-courses/
+│   └── README.md
+├── LICENSE
+└── README.md
+```
+
+- **code**: This directory contains the code for different projects undertaken during the Machine Learning Masters program.
+
+  - **project1**: Description of the first machine learning project.
+
+    - **src**: Source code for the project.
+    - **data**: Dataset used in the project.
+    - **README.md**: Project-specific documentation.
+
+  - **project2**: Description of the second machine learning project.
+
+    - **src**: Source code for the project.
+    - **data**: Dataset used in the project.
+    - **README.md**: Project-specific documentation.
+
+  - ...
+
+- **datasets**: This directory contains datasets used in various projects.
+
+- **literature**: This directory contains literature relevant to the machine learning studies.
+
+  - **papers**: Research papers related to machine learning.
+  - **books**: Books covering machine learning topics.
+  - **README.md**: Overview of literature resources.
+
+- **presentations**: This directory includes presentations given during the program.
+
+- **resources**: This directory contains educational resources such as textbooks and online courses.
+
+  - **textbooks**: Textbooks used for the studies.
+  - **online-courses**: Links and information about online courses.
+  - **README.md**: List of educational resources.
+
+- **LICENSE**: The license under which the code and resources are shared.
 
 - `engine`: Main programs that run the simulations
 - `tools`: Secondary functions
