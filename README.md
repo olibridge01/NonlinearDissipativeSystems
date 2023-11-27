@@ -17,7 +17,6 @@ python setup.py
 ```
 
 ## Directories
-
 - `engine`: Main programs that run the simulations
 - `tools`: Secondary functions
 - `scripts`: Plotters for the data produced by my code etc.
