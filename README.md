@@ -1,3 +1,8 @@
+![Python3.10](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue)
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
+
 # Quantum Reaction Rates in Nonlinear Dissipative Systems
 ## Part III Project
 
