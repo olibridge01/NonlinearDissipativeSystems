@@ -1,6 +1,10 @@
 # Quantum Reaction Rates in Nonlinear Dissipative Systems
 ## Part III Project
+
+<img src="https://github.com/olibridge01/NonlinearDissipativeSystems/assets/86416298/01d37871-359f-4006-a4b3-0a2783bd4e5b"  width="400">
+
 ---
+
 
 **Oli Bridge** (<ob344@cam.ac.uk>) - *St Catharine's College, Cambridge*
 
@@ -26,11 +30,11 @@ python setup.py
 │   ├── autocorrelation.py
 │   ├── bath.py
 │   └── utils.py
+├── figures/
 ├── scripts/
 │   ├── example1/
 │   └── example2/
 ├── thesis/
-├── figures/
 ├── acf_example.ipynb
 └── README.md
 ```
@@ -40,12 +44,12 @@ python setup.py
   - **`autocorrelation.py`**: Code for computing position autocorrelation functions of a ring polymer in a 1D potential.
   - **`bath.py`**: Code for linear/nonlinear bath rate calculations.
   - **`utils.py`**: General functions for constant temperature RPMD simulations.
+ 
+- **`figures/`**: Thesis figures.
 
 - **`scripts/`**: Scripts for running simulations.
 
 - **`thesis/`**: Full project thesis and slides for presentation of the project.
-
-- **`figures/`**: Thesis figures.
 
 - **`acf_example.ipynb`**: Example implementation of `autocorrelation.py`.
 
