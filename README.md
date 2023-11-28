@@ -1,14 +1,13 @@
 # Quantum Reaction Rates in Nonlinear Dissipative Systems
 ## Part III Project
 
-<img src="https://github.com/olibridge01/NonlinearDissipativeSystems/assets/86416298/01d37871-359f-4006-a4b3-0a2783bd4e5b"  width="400">
-
----
-
-
 **Oli Bridge** (<ob344@cam.ac.uk>) - *St Catharine's College, Cambridge*
 
 Part III Project in the *Althorpe group* - http://www-stuart.ch.cam.ac.uk/index.html
+
+---
+
+<img src="https://github.com/olibridge01/NonlinearDissipativeSystems/assets/86416298/01d37871-359f-4006-a4b3-0a2783bd4e5b"  width="400">
 
 ### Abstract
 
