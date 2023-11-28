@@ -12,7 +12,7 @@ Part III Project in the *Althorpe group* - http://www-stuart.ch.cam.ac.uk/index.
 
 ---
 
-<img src="https://github.com/olibridge01/NonlinearDissipativeSystems/assets/86416298/01d37871-359f-4006-a4b3-0a2783bd4e5b"  width="400">
+<img src="https://github.com/olibridge01/NonlinearDissipativeSystems/assets/86416298/5ec3bd36-7c36-49c1-81b5-ab341dd94da2"  width="400">
 
 ### Abstract
 
