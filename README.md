@@ -80,8 +80,9 @@ The directory structure is as follows:
 The ring polymer Hamiltonian for a 1D potential is given by
 
 $$
-H_N(\mathbf{p},\mathbf{q}) = \sum_{j=1}^N \left[\frac{p_j^2}{2m} + \frac{1}{2}m\omega_N^2(q_j-q_{j+1})^2 + V(q_j)\right]
+  H_N(\mathbf{p},\mathbf{q}) = \sum_{j=1}^N \left[\frac{p_j^2}{2m} + \frac{1}{2}m\omega_N^2(q_j-q_{j+1})^2 + V(q_j)\right]
 $$
+
 where $N$ is the number of beads, $m$ is the mass of each bead, $\omega_N=N/\beta \hbar$, $\beta=1/k_BT$, and $p_j$ and $q_j$ are the momentum and position of the $j^{th}$ bead.
 
 ### RPMD Rates
@@ -114,7 +115,7 @@ $$
 where we define $q_s$ ad the system reaction coordinate, $q_s^{\ddagger}$ as the transition state, $m_s$ as the system mass, and $\bar{q}_s$ and $\bar{p}_s$ as the centroid position and momentum of the ring polymer, respectively. The RPMD TST rate constant, $k^{\text{QTST}}(T)$, is given by
 
 $$
-    k^{\text{QTST}}(T) = \frac{1}{(2\pi \beta m_s)^{1/2}}\:p(q_s^0)\:\exp\left(-\beta\int_{q_s^0}^{q_s^{\ddagger}}\text{d}q_s'\:\frac{\text{d}\mathcal{F}(q_s')}{\text{d}q_s'}\right),
+    k^{\text{QTST}}(T) = \frac{1}{(2\pi \beta m_s)^{1/2}}\:p(q_s^0)\:\exp\left(-\beta\int_{q_s^0}^{q_s^{\ddagger}}\text{d}q_s'\frac{\text{d}\mathcal{F}(q_s')}{\text{d}q_s'}\right),
 $$
 
 where $\mathcal{F}(q_s)$ is the free energy along the reaction coordinate, and $p(q_s^0)$ is the probability of the ring polymer centroid being at $q_s^0$, a point in the reactant well. For more details on the rate calculation mathematical background, see my [Part III thesis](thesis/partIII_thesis.pdf).
