@@ -1,5 +1,6 @@
 import random
 import numpy as np
+from typing import List, Union, Tuple
 
 class Constants(object):
     """Physical constants for the MD/RPMD simulations."""
@@ -81,3 +82,57 @@ def rpmd_E(omega_k: float, m: float, dt: float, constraint: bool = False) -> np.
         E[1][0] = (1 / (m * omega_k)) * np.sin(omega_k * dt)
         E[1][1] = np.cos(omega_k * dt)
     return E
+
+def friction(eta_0: float, q: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    """
+    Friction function for nonlinear bath coupling studied in this project.
+
+    Args:
+        eta_0 (float): Function parameter.
+        q (float): System position.
+    """
+    return np.sqrt(eta_0) * q * (1 - np.exp(-(q ** 2) / 2))
+
+
+def friction_deriv(eta_0: float, q: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    """Derivative of friction function for nonlinear bath coupling studied in this project."""
+    return np.sqrt(eta_0) * (1 - np.exp(-(q ** 2) / 2) + (q ** 2) * np.exp(-(q ** 2) / 2))
+
+def nm_transform(p: np.ndarray, x: np.ndarray, px: np.ndarray, RPMD_C: np.ndarray) -> np.ndarray:
+    """Transform the positions and momenta into the normal mode representation."""
+    px[:, 0] = np.dot(p, RPMD_C)
+    px[:, 1] = np.dot(x, RPMD_C)
+    return px
+
+def rev_transform(px: np.ndarray, RPMD_C: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Transform the positions and momenta back into the original representation."""
+    p = np.dot(RPMD_C, px[:, 0])
+    x = np.dot(RPMD_C, px[:, 1])
+    return p, x
+
+def evolve(px: np.ndarray, RPMD_E: List[np.ndarray], RPMD_E_CONST: List[np.ndarray], constraint: bool = False) -> np.ndarray:
+    """Evolve the positions and momenta in the velocity Verlet algorithm using the evolution matrix."""
+    if constraint:
+        for i_bead, row in enumerate(px):
+            px[i_bead, :] = np.dot(RPMD_E_CONST[i_bead], row)
+    else:
+        for i_bead, row in enumerate(px):
+            px[i_bead, :] = np.dot(RPMD_E[i_bead], row)
+
+    return px
+
+def heaviside(x: float) -> int:
+    """Heaviside step function."""
+    if x > 0:
+        return 1
+    elif x <= 0:
+        return 0
+
+def centroid(arr: Union[np.ndarray, float], n_beads: int) -> Union[np.ndarray, float]:
+    """Compute the centroid of an array of bead positions."""
+    if isinstance(arr, float):
+        return arr
+    centroid = 0
+    for entry in arr:
+        centroid += (1 / n_beads) * entry
+    return centroid
