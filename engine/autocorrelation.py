@@ -1,26 +1,15 @@
-import numpy as np
 import random
-from engine.utils import init_p, rpmd_C, rpmd_E
+import numpy as np
 import matplotlib.pyplot as plt
+from typing import List, Tuple
+
+from NonlinearDissipativeSystems.engine.utils import init_p, rpmd_C, rpmd_E
+
 
 #--------------------Frequencies--------------------
 
-def omegas(N,beta):
-    """
-    Generates the ring polymer normal mode frequencies.
-    
-    Parameters
-    ----------
-    N : int
-        Number of ring polymer beads.
-    beta : float
-        Inverse temperature (1/(kB*T)).
-
-    Returns
-    -------
-    omegas : array
-        Array of ring polymer normal mode frequencies.
-    """
+def omegas(N: int, beta: float) -> np.ndarray:
+    """Generates the ring polymer normal mode frequencies."""
     omega_N = N / beta
     omegas = np.zeros(N)
     for i in range(N):
@@ -29,31 +18,29 @@ def omegas(N,beta):
 
 #------------------Autocorrelation Function------------------
 
-class AutoCorrelation:
-    def __init__(self, force, beta=1.0, mass=1.0, dt=0.05, n_samp=1000, n_equil=100, n_evol=500):
+class AutoCorrelation(object):
+    def __init__(
+        self, 
+        force: callable,
+        beta: float = 1.0,
+        mass: float = 1.0,
+        dt: float = 0.05,
+        n_samp: int = 1000,
+        n_equil: int = 100,
+        n_evol: int = 500
+    ):
         """
-        Initialise simulation parameters for calculation of TCFs.
+        Args:
+            force (function): Function for the force acting on the particle.
+            beta (float): Inverse temperature (1/(kB*T)).
+            mass (float): Particle mass in atomic units.
+            dt (float): Timestep length in atomic units.
+            n_samp (int): Number of samples to take in the sampling phase.
+            n_equil (int): Number of cycles in the equilibration phase (discarded before sampling phase).
+            n_evol (int): Number of timesteps in the evolution phase.
         
-        Parameters
-        ----------
-        force : function
-            Function for the force acting on the particle.
-        beta : float
-            Inverse temperature (1/(kB*T)).
-        mass : float
-            Particle mass in atomic units.
-        dt : float
-            Timestep length in atomic units.
-        n_samp : int
-            Number of samples to take in the sampling phase.
-        n_equil : int
-            Number of cycles in the equilibration phase (discarded before sampling phase).
-        n_evol : int
-            Number of timesteps in the evolution phase.
-        
-        Returns
-        -------
-        None.
+        Returns:
+            None.
         """
         self.mass = mass
         self.beta = beta
@@ -63,45 +50,19 @@ class AutoCorrelation:
         self.n_equil = n_equil
         self.force = force
 
+    def classical_verlet_step(self, x: float, p: float) -> tuple:
+        """Velocity Verlet algorithm for a classical 1D particle."""
 
-    def classical_verlet_step(self, x, p):
-        """
-        Velocity Verlet algorithm for a classical particle.
-        
-        Parameters
-        ----------
-        x : float
-            Particle position.
-        p : float
-            Particle momentum.
-
-        Returns
-        -------
-        x : float
-            Updated particle position.
-        p : float
-            Updated particle momentum.
-        """
         p += (self.dt / 2) * self.force(x)
         x += self.dt * (p / self.mass)
         p += (self.dt / 2) * self.force(x)
         return x, p
 
+    def classical_autocorrelation(self) -> np.ndarray:
+        """Compute <x(0)x(t)> for a classical particle in a given 1D potential."""
 
-    def classical_autocorrelation(self):
-        """
-        Compute <x(0)x(t)> for a classical particle in a given 1D potential.
-        
-        Returns
-        -------
-        xx : array
-            Array of average <x(0)x(t)> values for each timestep in the evolution phase.
-        """
-
-        # Set number of beads to 1 (classical particle)
+        # Set number of beads to 1 (classical particle) and initialise array of x(0)x(t) values
         N = 1
-
-        # Initialise array of x(0)x(t) values, as well as momentum for classical particle
         xx = np.zeros(self.n_evol)
 
         # Initialise particle momentum and position
@@ -110,8 +71,7 @@ class AutoCorrelation:
 
         # Equilibriation phase
         for i_equilibrium in range(self.n_equil):
-            # Momentum resampled every cycle to avoid nonergodicity
-            p = init_p(p, N, self.mass, self.beta)
+            p = init_p(p, N, self.mass, self.beta) # Momentum resampled every cycle to avoid nonergodicity
 
             # Velocity verlet algorithm
             for i_evol in range(self.n_evol):
@@ -138,28 +98,15 @@ class AutoCorrelation:
         xx /= self.n_samp
         return xx
 
-
-    def rpmd_verlet_step(self, N, x, p, RPMD_C, omegas):
-        """
-        Velocity Verlet algorithm for a ring polymer particle.
+    def rpmd_verlet_step(self, N: int, x: np.ndarray, p: np.ndarray, RPMD_C: np.ndarray, omegas: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Velocity Verlet algorithm for a ring polymer particle in a 1D potential.
         
-        Parameters
-        ----------
-        x : array
-            Array of bead positions.
-        p : array
-            Array of bead momenta.
-        RPMD_C : array
-            Transformation matrix to transform the positions and momenta into the normal mode representation.
-        omegas : array
-            Array of ring polymer normal mode frequencies.
-
-        Returns
-        -------
-        x : array
-            Updated array of bead positions.
-        p : array
-            Updated array of bead momenta.
+        Args:
+            N (int): Number of ring polymer beads.
+            x (array): Array of bead positions.
+            p (array): Array of bead momenta.
+            RPMD_C (array): Transformation matrix to transform the positions and momenta into the normal mode representation.
+            omegas (array): Array of ring polymer normal mode frequencies.
         """
         p += (self.dt / 2) * self.force(x)
 
@@ -177,21 +124,8 @@ class AutoCorrelation:
 
         return x, p
 
-
-    def rpmd_autocorrelation(self, N):
-        """
-         Compute <x_N(0)x_N(t)> for an N-bead ring polymer in a given 1D potential.
-        
-        Parameters
-        ----------
-        N : int
-            Number of ring polymer beads.
-
-        Returns
-        -------
-        xx : array
-            Array of average <x_N(0)x_N(t)> values for each timestep in the evolution phase.
-        """
+    def rpmd_autocorrelation(self, N: int) -> np.ndarray:
+        """Compute <x_N(0)x_N(t)> for an N-bead ring polymer in a given 1D potential."""
 
         # Create matrix objects for the trajectory propagator
         RPMD_C = rpmd_C(N)
