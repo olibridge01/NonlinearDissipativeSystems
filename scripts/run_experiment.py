@@ -11,18 +11,12 @@ if __name__ == '__main__':
     # Set up argument parser with all possible input parameters and defaults
     parser = argparse.ArgumentParser(description='Compute rates for a linear bath',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-t', '--temperature', type=float, default=300.0,
-                        help='Temperature of the simulation in Kelvin')
-    parser.add_argument('--n_bathmodes', type=int, default=9,
-                        help='Number of bathmodes')
-    parser.add_argument('-g', '--gamma_factor', type=float, required=True,
-                        help="Friction value in units of omega_b")
-    parser.add_argument('-n', '--n_beads', type=int, default=2, required=True,
-                        help="Number of beads for RPMD simulation")
-    parser.add_argument('-l', '--linear', action='store_true',
-                        help="Flag to use linear bath coupling")
-    parser.add_argument('-c', '--config', type=str, default='config.yaml',
-                        help="Path to config file")
+    parser.add_argument('-t', '--temperature', type=float, default=300.0, help='Temperature of the simulation in Kelvin')
+    parser.add_argument('--n_bathmodes', type=int, default=9, help='Number of bathmodes')
+    parser.add_argument('-g', '--gamma_factor', type=float, required=True, help="Friction value in units of omega_b")
+    parser.add_argument('-n', '--n_beads', type=int, default=2, required=True, help="Number of beads for RPMD simulation")
+    parser.add_argument('-l', '--linear', action='store_true', help="Flag to use linear bath coupling")
+    parser.add_argument('-c', '--config', type=str, default='config.yaml', help="Path to config file")
     args = parser.parse_args()
 
     # Load config yaml file
@@ -84,6 +78,6 @@ if __name__ == '__main__':
         # Label the output files with the current date/time
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-        np.savetxt(f'{args.path_string}/{linear_save_flag}_kappa_{dt_string}.csv', results_kappa, delimiter=',')
-        np.savetxt(f'{args.path_string}/{linear_save_flag}_mf_{dt_string}.csv', results_fe, delimiter=',')
-        np.savetxt(f'{args.path_string}/{linear_save_flag}_rdist_{dt_string}.csv', results_rd, delimiter=',')
+        np.savetxt(f'{args.path_string}/{linear_save_flag}_kappa_gamma_{args.gamma_factor}.csv', results_kappa, delimiter=',')
+        np.savetxt(f'{args.path_string}/{linear_save_flag}_mf_gamma_{args.gamma_factor}.csv', results_fe, delimiter=',')
+        np.savetxt(f'{args.path_string}/{linear_save_flag}_rdist_gamma_{args.gamma_factor}.csv', results_rd, delimiter=',')
