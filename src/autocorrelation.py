@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Tuple
 
-from NonlinearDissipativeSystems.engine.utils import init_p, rpmd_C, rpmd_E
+from NonlinearDissipativeSystems.src.utils import init_p, rpmd_C, rpmd_E
 
 
 #--------------------Frequencies--------------------
