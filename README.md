@@ -6,7 +6,7 @@
 
 This repository contains a compact Python implementation of the [Ring Polymer Molecular Dynamics (RPMD)](https://doi.org/10.1063/1.1777575) method for computing approximate quantum rate constants in dissipative systems with linear and nonlinear friction. The code is used to simulate the dynamics of a ring polymer in a 1D potential, under the influence of a bath of harmonic oscillators to emulate a condensed phase environment.
 
-RPMD results produced from this code contributed to the paper ["*Quantum Rates in Dissipative Systems with Spatially Varying Friction*", Bridge et al., J. Chem. Phys. (2024).](https://doi.org/10.1063/5.0216823)
+RPMD results produced from this code contributed to the paper ["*Quantum Rates in Dissipative Systems with Spatially Varying Friction*", Bridge et al., J. Chem. Phys. (2024)](https://doi.org/10.1063/5.0216823). For experimental data (including ML-MCTDH results), and plotting scripts for the figures in the paper, please see the paper's [GitLab repository](https://gitlab.com/litman90/quantum_spatially_varying_friction).
 
 
 
