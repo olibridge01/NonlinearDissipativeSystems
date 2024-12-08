@@ -59,7 +59,8 @@ class RateCalc(object):
         n_samp_rd: int, 
         n_equil: int, 
         n_evol_kappa: int, 
-        n_evol_fe: int
+        n_evol_fe: int,
+        linear: bool = True
     ):
         """
         Args:
@@ -86,6 +87,7 @@ class RateCalc(object):
         self.n_evol_fe = n_evol_fe
         self.dt = 0.05 * ((2 * np.pi) / (-Constants.w_c * np.log(0.5 / self.n_bathmodes)))
         self.n_config = 50 # Number of Verlet iterations for constrained centroid sampling
+        self.linear = linear
 
     def classical_transmission(self, gamma_factor: float, i_repeat: int) -> np.ndarray:
         """
@@ -105,7 +107,7 @@ class RateCalc(object):
         n_beads = 1
 
         # Instantiate array of BathMode instances
-        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt)
+        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt, linear=self.linear)
         print(f'{gamma} , no. {i_repeat} started.')
 
         # Loop over n_samples
@@ -153,7 +155,7 @@ class RateCalc(object):
             constrain_x (float): Position value of constrained particle.
         """
         n_beads = 1
-        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt)
+        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt, linear=self.linear)
         syst.x = constrain_x
         mean_force = 0
 
@@ -233,7 +235,7 @@ class RateCalc(object):
         sys_config = np.zeros((n_beads, self.n_samp_kappa))
         bath_config = np.zeros((n_beads, self.n_bathmodes, self.n_samp_kappa))
 
-        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt)
+        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt, linear=self.linear)
         for i_bead in range(n_beads):
             syst.x[i_bead] = constrain_x
 
@@ -260,7 +262,7 @@ class RateCalc(object):
         gamma = gamma_factor * Constants.w_b
         numer = np.zeros(self.n_evol_kappa)
         denom = 0
-        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt)
+        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt, linear=self.linear)
 
         if verbose:
             print(f'{gamma}, no. {i_repeat} started.')
@@ -298,7 +300,7 @@ class RateCalc(object):
     def rpmd_mean_force(self, gamma: float, n_beads: int, constrain_x: float, verbose: bool = False) -> float:
         """Compute RPMD centroid-constrained mean force."""
         mean_force = 0
-        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt)
+        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt, linear=self.linear)
         for i_bead in range(n_beads):
             syst.x[i_bead] = constrain_x
 
@@ -353,7 +355,7 @@ class RateCalc(object):
 
         gamma = gamma_factor * Constants.w_b
         centroid_positions = np.zeros(self.n_samp_rd)
-        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt)
+        syst, bath = create_systembath(self.beta, self.n_bathmodes, gamma, n_beads, self.dt, linear=self.linear)
 
         for i_bead in range(n_beads):
             syst.x[i_bead] = Constants.min_val
