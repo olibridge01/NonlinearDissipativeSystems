@@ -9,7 +9,6 @@ This repository contains a compact Python implementation of the [Ring Polymer Mo
 RPMD results produced from this code contributed to the paper ["*Quantum Rates in Dissipative Systems with Spatially Varying Friction*", Bridge et al., J. Chem. Phys. (2024).](https://doi.org/10.1063/5.0216823)
 
 
-
 ## Installation
 To clone the repository, run the following:
   ```bash
