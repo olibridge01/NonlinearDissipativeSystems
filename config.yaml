@@ -1,0 +1,9 @@
+n_samp_kappa: 40000
+n_samp_fe: 20000
+n_samp_rd: 100000
+n_equil: 200
+n_evol_kappa: 200
+n_evol_fe: 50
+n_points_fe: 50
+n_repeats: 8
+save_path: results
